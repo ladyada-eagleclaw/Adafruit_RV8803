@@ -3,12 +3,12 @@
  * @brief Hardware test 06: RAM Read/Write + Power Cycle
  *
  * Tests the 1-byte RAM register, including loss after full power cycle.
- * Requires: VCC wired to A3, no coin battery.
+ * Requires: VCC wired to A0, no coin battery.
  */
 
 #include <Adafruit_RV8803.h>
 
-#define RTC_VCC_PIN A3
+#define RTC_VCC_PIN A0
 #define RTC_SDA_PIN A4
 #define RTC_SCL_PIN A5
 
@@ -65,7 +65,7 @@ void setup() {
   while (!Serial)
     delay(10);
 
-  // Power the RV-8803 via GPIO (VCC wired to A3)
+  // Power the RV-8803 via GPIO (VCC wired to A0)
   pinMode(RTC_VCC_PIN, OUTPUT);
   digitalWrite(RTC_VCC_PIN, HIGH);
   delay(100); // Let chip stabilize after power-on

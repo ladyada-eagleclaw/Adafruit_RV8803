@@ -92,11 +92,12 @@
 
 /** @name Control Register Bits (0x0F)
  *  @{ */
-#define RV8803_CTRL_UIE 0x20   /**< Update interrupt enable */
-#define RV8803_CTRL_TIE 0x10   /**< Timer interrupt enable */
-#define RV8803_CTRL_AIE 0x08   /**< Alarm interrupt enable */
-#define RV8803_CTRL_EIE 0x04   /**< Event interrupt enable */
-#define RV8803_CTRL_RESET 0x01 /**< Software reset (auto-clears) */
+#define RV8803_CTRL_UIE 0x20 /**< Update interrupt enable */
+#define RV8803_CTRL_TIE 0x10 /**< Timer interrupt enable */
+#define RV8803_CTRL_AIE 0x08 /**< Alarm interrupt enable */
+#define RV8803_CTRL_EIE 0x04 /**< Event interrupt enable */
+#define RV8803_CTRL_RESET \
+  0x01 /**< Prescaler reset/stop (software must clear) */
 /** @} */
 
 /** @name Event Control Register Bits (0x2F)
@@ -107,6 +108,15 @@
 #define RV8803_EVCTRL_ET_SHIFT 4   /**< Event filter shift */
 #define RV8803_EVCTRL_ERST 0x01    /**< Event reset (auto-clear on event) */
 /** @} */
+
+/** All writable status flags; writing one preserves an existing flag. */
+#define RV8803_FLAG_MASK 0x3F
+/** Writable control bits; reserved bits must stay zero. */
+#define RV8803_CTRL_MASK 0x3D
+/** Six-bit signed offset encoding. */
+#define RV8803_OFFSET_MASK 0x3F
+/** Invalid byte result after an I2C read failure. */
+#define RV8803_READ_ERROR 0xFF
 
 /** @name Alarm AE Bits (inverted: 0=enabled, 1=disabled)
  *  @{ */
@@ -168,6 +178,12 @@ typedef enum {
   RV8803_InterruptEvent = 0x04,  /**< EIE — external event */
 } rv8803_interrupt_t;
 
+/** Captured external-event time within a minute (not a full date/time). */
+typedef struct {
+  uint8_t seconds;    /**< Captured seconds, 0-59. */
+  uint8_t hundredths; /**< Captured hundredths, 0-99. */
+} rv8803_timestamp_t;
+
 /*=========================================================================
     CLASS
     -----------------------------------------------------------------------*/
@@ -183,9 +199,13 @@ typedef enum {
 class Adafruit_RV8803 : public RTC_I2C {
  public:
   // Core — Init & Time (RTClib compatible)
+  Adafruit_RV8803() = default;
+  ~Adafruit_RV8803();
+  Adafruit_RV8803(const Adafruit_RV8803&) = delete;
+  Adafruit_RV8803& operator=(const Adafruit_RV8803&) = delete;
   bool begin(TwoWire* wire = &Wire);
   DateTime now();
-  void adjust(const DateTime& dt);
+  bool adjust(const DateTime& dt);
   bool lostPower();
   bool isrunning();
   uint8_t getHundredths();
@@ -222,6 +242,7 @@ class Adafruit_RV8803 : public RTC_I2C {
   bool configureEvent(bool rising_edge, rv8803_event_filter_t filter);
   bool enableEventCapture(bool enable);
   bool enableEventReset(bool enable);
+  bool getEventTimestamp(rv8803_timestamp_t* timestamp);
   uint8_t getEventHundredths();
   uint8_t getEventSeconds();
   bool eventFired();
@@ -265,7 +286,6 @@ class Adafruit_RV8803 : public RTC_I2C {
  private:
   static uint8_t weekday2onehot(uint8_t day);
   static uint8_t onehot2weekday(uint8_t bits);
-  rv8803_alarm_mode_t _alarmMode; /**< Cached alarm mode */
 };
 
 #endif // ADAFRUIT_RV8803_H

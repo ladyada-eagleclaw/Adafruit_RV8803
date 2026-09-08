@@ -3,7 +3,7 @@
  * @brief Hardware test 07: SQW Pin Modes
  *
  * Tests CLKOUT frequency by bit-bang counting edges on D5.
- * CLKOE on D2 is active LOW on this breakout.
+ * CLKOE on D2 is active HIGH.
  * Also verifies read-modify-write preserves other Extension register bits.
  *
  * Wiring: SQWAVE -> D5, CLKOE -> D2
@@ -40,9 +40,9 @@ void setup() {
   while (!Serial)
     delay(10);
 
-  // Power the RV-8803 via GPIO (VCC wired to A3)
-  pinMode(A3, OUTPUT);
-  digitalWrite(A3, HIGH);
+  // Power the RV-8803 via GPIO (VCC wired to A0)
+  pinMode(A0, OUTPUT);
+  digitalWrite(A0, HIGH);
   delay(100); // Let chip stabilize after power-on
 
   Serial.println(F("=== HW Test 07: SQW Modes ==="));

@@ -1,147 +1,107 @@
-/*!
- * @file 10_countdown_timer.ino
- * @brief Hardware test 10: Countdown Timer
- *
- * Tests countdown timer functionality with timing verification.
- */
-
+// Metro Mini: VIN=A0, INT=D3, SDA=A4, SCL=A5.
+// Manual sections 4.5.2-4.5.3 distinguish startup from repeating periods.
 #include <Adafruit_RV8803.h>
 
 Adafruit_RV8803 rtc;
+const uint16_t interruptPin = 3;
+// Covers the uncalibrated Metro clock and I2C setup, not RTC ppm accuracy.
+const uint32_t timingToleranceUs = 50000;
+volatile uint32_t edgeTime = 0;
+volatile uint8_t edgeCount = 0;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial)
+  // Wait for Serial Monitor on native USB boards; remove for standalone use.
+  while (!Serial) delay(10);
+  delay(250);
+  Serial.println(F("Adafruit RV8803 countdown timing test"));
+  digitalWrite(A0, HIGH);
+  pinMode(A0, OUTPUT);
+  pinMode(interruptPin, INPUT);
+  delay(100);
+  check(rtc.begin(), F("Begin succeeded"));
+  // Isolate the timer on the shared INT output and release prescaler RESET.
+  check(rtc.writeControlRegister(0), F("Interrupt sources disabled"));
+  attachInterrupt(digitalPinToInterrupt(interruptPin), timerEdge, FALLING);
+
+  const uint16_t presets[] = {3, 5};
+  for (uint8_t i = 0; i < 2; i++) {
+    uint16_t preset = presets[i];
+    Serial.println();
+    Serial.print(F("Countdown preset: "));
+    Serial.println(preset);
+    // Manual 4.5.2: clear TE, TIE, TF in that order before configuring.
+    check(rtc.disableCountdownTimer(), F("Timer stopped for configuration"));
+    check(rtc.disableInterrupt(RV8803_InterruptTimer), F("Timer interrupt disabled"));
+    check(rtc.clearTimer(), F("Timer flag cleared"));
     delay(10);
+    check(digitalRead(interruptPin) == HIGH, F("INT initially released"));
+    noInterrupts();
+    edgeCount = 0;
+    edgeTime = 0;
+    interrupts();
+    check(rtc.enableInterrupt(RV8803_InterruptTimer), F("Timer interrupt enabled"));
+    uint32_t previous = micros();
+    check(rtc.enableCountdownTimer(RV8803_Timer1Hz, preset), F("Countdown started"));
+    check(rtc.getCountdownTimer() == preset, F("Preset readback matched"));
 
-  // Power the RV-8803 via GPIO (VCC wired to A3)
-  pinMode(A3, OUTPUT);
-  digitalWrite(A3, HIGH);
-  delay(100); // Let chip stabilize after power-on
-
-  Serial.println(F("=== HW Test 10: Countdown Timer ==="));
-  Serial.println();
-
-  if (!rtc.begin()) {
-    Serial.println(F("FAIL: RV8803 not found"));
-    return;
-  }
-
-  uint8_t passed = 0;
-  uint8_t total = 5;
-
-  // Test 1: Set 3-second countdown and verify value
-  Serial.println(F("Test 1: Enable 3-second countdown ..."));
-  rtc.clearTimer();
-  rtc.enableCountdownTimer(RV8803_Timer1Hz, 3);
-  rtc.enableInterrupt(RV8803_InterruptTimer);
-
-  uint16_t timerVal = rtc.getCountdownTimer();
-  Serial.print(F("  getCountdownTimer() = "));
-  Serial.println(timerVal);
-
-  if (timerVal == 3) {
-    Serial.println(F("  PASS - timer value set correctly"));
-    passed++;
-  } else {
-    Serial.println(F("  FAIL - timer value incorrect"));
-  }
-
-  // Test 2: Verify 3-second timer fires with correct timing (2500-4500ms)
-  // Note: Timer may take up to 1 extra second due to asynchronous start
-  Serial.println(F("Test 2: Verify 3-second timing (expect 2500-4500ms) ..."));
-  rtc.clearTimer();
-  rtc.enableCountdownTimer(RV8803_Timer1Hz, 3);
-  rtc.enableInterrupt(RV8803_InterruptTimer);
-
-  unsigned long start = millis();
-  bool fired = false;
-  unsigned long elapsed = 0;
-
-  while (millis() - start < 6000) {
-    if (rtc.timerFired()) {
-      fired = true;
-      elapsed = millis() - start;
-      Serial.print(F("  Timer fired after "));
-      Serial.print(elapsed);
-      Serial.println(F(" ms"));
-      break;
+    for (uint8_t event = 1; event <= 3; event++) {
+      unsigned long waitStart = millis();
+      while (edgeCount < event && millis() - waitStart < (preset + 2UL) * 1000) {
+        delay(1);
+      }
+      noInterrupts();
+      uint32_t captured = edgeTime;
+      uint8_t count = edgeCount;
+      interrupts();
+      check(count == event, F("Expected INT falling edge received"));
+      uint32_t elapsed = captured - previous;
+      Serial.print(F("INT interval (seconds): "));
+      Serial.println(elapsed / 1000000.0, 6);
+      uint32_t nominal = preset * 1000000UL;
+      if (event == 1) {
+        // First interval: n through n+1 seconds, plus fixture tolerance.
+        check(elapsed >= nominal - timingToleranceUs &&
+              elapsed <= nominal + 1000000UL + timingToleranceUs,
+              F("Startup interval matched the datasheet"));
+      } else {
+        check(abs((long)elapsed - (long)nominal) <= (long)timingToleranceUs,
+              F("Repeated interval matched the preset"));
+      }
+      check(rtc.timerFired(), F("Timer flag asserted"));
+      check(rtc.clearTimer(), F("Timer flag cleared after event"));
+      check(!rtc.timerFired(), F("Timer flag read back clear"));
+      previous = captured;
+      // Leave TE enabled so the next event uses automatic reload.
     }
-    delay(50);
   }
-
-  if (fired) {
-    if (elapsed >= 2500 && elapsed <= 4500) {
-      Serial.println(F("  PASS - timing correct (3s +1s/-0.5s)"));
-      passed++;
-    } else {
-      Serial.print(F("  FAIL - timing off (expected 2500-4500ms, got "));
-      Serial.print(elapsed);
-      Serial.println(F("ms)"));
-    }
-  } else {
-    Serial.println(F("  FAIL - timer did not fire within 6s"));
-  }
-
-  // Test 3: Verify 5-second timer fires with correct timing (4500-5500ms)
-  Serial.println(F("Test 3: Verify 5-second timing (expect 4500-5500ms) ..."));
-  rtc.clearTimer();
-  rtc.enableCountdownTimer(RV8803_Timer1Hz, 5);
-  rtc.enableInterrupt(RV8803_InterruptTimer);
-
-  start = millis();
-  fired = false;
-  elapsed = 0;
-
-  while (millis() - start < 7000) {
-    if (rtc.timerFired()) {
-      fired = true;
-      elapsed = millis() - start;
-      Serial.print(F("  Timer fired after "));
-      Serial.print(elapsed);
-      Serial.println(F(" ms"));
-      break;
-    }
-    delay(50);
-  }
-
-  if (fired) {
-    if (elapsed >= 4500 && elapsed <= 5500) {
-      Serial.println(F("  PASS - timing correct (5s ± 500ms)"));
-      passed++;
-    } else {
-      Serial.print(F("  FAIL - timing off (expected 4500-5500ms, got "));
-      Serial.print(elapsed);
-      Serial.println(F("ms)"));
-    }
-  } else {
-    Serial.println(F("  FAIL - timer did not fire within 7s"));
-  }
-
-  // Test 4: Clear timer flag
-  Serial.println(F("Test 4: Clear timer flag ..."));
-  rtc.clearTimer();
-  if (!rtc.timerFired()) {
-    Serial.println(F("  PASS - timer flag cleared"));
-    passed++;
-  } else {
-    Serial.println(F("  FAIL - timer flag still set"));
-  }
-
-  // Test 5: Disable timer
-  Serial.println(F("Test 5: Disable timer ..."));
-  rtc.disableCountdownTimer();
-  rtc.disableInterrupt(RV8803_InterruptTimer);
-  Serial.println(F("  PASS - timer disabled"));
-  passed++;
-
-  Serial.println();
-  Serial.print(passed);
-  Serial.print(F("/"));
-  Serial.print(total);
-  Serial.println(F(" tests passed"));
+  check(rtc.disableCountdownTimer(), F("Timer stopped"));
+  check(rtc.disableInterrupt(RV8803_InterruptTimer), F("Timer interrupt disabled"));
+  check(rtc.clearTimer(), F("Final timer flag cleared"));
+  uint8_t stoppedCount = edgeCount;
+  delay(5100);
+  check(edgeCount == stoppedCount && !rtc.timerFired(), F("No events after stopping"));
+  detachInterrupt(digitalPinToInterrupt(interruptPin));
+  Serial.println(F("ALL PASSED"));
 }
 
-void loop() {
-  // Nothing to do
+void loop() {}
+
+void timerEdge() {
+  edgeTime = micros();
+  edgeCount++;
+}
+
+void clearOutputsAndHalt(const __FlashStringHelper* message) {
+  Serial.print(F("FAIL: "));
+  Serial.println(message);
+  rtc.disableCountdownTimer();
+  rtc.disableInterrupt(RV8803_InterruptTimer);
+  detachInterrupt(digitalPinToInterrupt(interruptPin));
+  while (true) delay(10);
+}
+
+void check(bool success, const __FlashStringHelper* message) {
+  if (!success) clearOutputsAndHalt(message);
+  Serial.println(message);
 }

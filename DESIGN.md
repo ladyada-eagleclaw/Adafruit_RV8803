@@ -5,7 +5,7 @@
 - **Function:** Real-Time Clock with I2C interface
 - **I2C Address:** 0x32 (fixed)
 - **I2C Modes:** Standard (100 kHz, VDD ≥ 1.5V), Fast (400 kHz, VDD ≥ 2.0V)
-- **VDD Range:** 1.1V–5.5V
+- **VDD Range:** 1.5V–5.5V for specified operation
 - **Time Format:** 24-hour only, BCD-encoded
 - **Year Range:** 2000–2099 (with leap year correction)
 - **Features:** Alarm, countdown timer, periodic update interrupt, external event with timestamp, CLKOUT, offset calibration, 1-byte RAM, voltage low detection
@@ -63,7 +63,31 @@ Note: AE bits are **inverted** — 0 = enabled, 1 = disabled.
 | 0x0B | Timer Counter 0 | [7:0] | Lower 8 bits of 12-bit preset value |
 | 0x0C | Timer Counter 1 | [7:4] GP5–GP2, [3:0] upper 4 bits | Total: 12-bit timer (0–4095) |
 
-Countdown period = timer_value / timer_clock_frequency.
+Repeating countdown period = timer_value / timer_clock_frequency.
+
+The first interval after enabling or restarting the timer includes an asynchronous
+startup delay. It must be checked separately from automatically reloaded periods.
+For a preset `n`, the manufacturer's first-period limits are:
+
+| Timer clock | First interval | Later intervals |
+|-------------|----------------|-----------------|
+| 4096 Hz | n × 244 µs + 61 µs through (n + 1) × 244 µs + 61 µs | n × 244 µs |
+| 64 Hz | n / 64 through (n + 1) / 64 seconds | n / 64 seconds |
+| 1 Hz | n through n + 1 seconds | n seconds |
+| 1/60 Hz | n × 60 through (n + 1) × 60 seconds | n × 60 seconds |
+
+The 4096 Hz entries use the manual's rounded times. For example, a five-count
+timer at 1 Hz initially takes **5–6 seconds**, then repeats every 5 seconds.
+At 64 Hz, a preset of 320 gives a first interval of 5–5.015625 seconds and
+subsequent intervals of 5 seconds. Do not subtract one from the preset to
+compensate: that would shorten every repeated period.
+
+The hardware test measures INT edges on D3. Its 50 ms fixture tolerance covers
+the Metro's uncalibrated clock and setup overhead; it is not a measurement of
+the RTC's ppm accuracy. Flag polling adds up to one polling interval of detection
+latency. The old 4.5–5.5-second startup test incorrectly rejected normal behavior.
+
+Source: [Micro Crystal application manual, sections 4.5.2–4.5.3](https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-8803-C7_App-Manual.pdf#page=29).
 
 ### Extension Register (0x0D)
 
@@ -116,7 +140,7 @@ Clearing V1F clears both V1F and V2F. Clearing V2F clears both.
 | 4 | TIE | Timer interrupt enable |
 | 3 | AIE | Alarm interrupt enable |
 | 2 | EIE | External event interrupt enable |
-| 0 | RESET | Software reset (auto-clears). Resets prescaler + all regs except time/cal. |
+| 0 | RESET | Holds the prescaler stopped while 1. Software must clear it to resume timekeeping. It does not erase the registers. |
 
 Bits 7:6 reserved. Bit 1 always 0.
 
@@ -238,21 +262,23 @@ bool begin(TwoWire *wire = &Wire);
   // Init I2C at 0x32. Returns false on NACK.
 
 DateTime now();
-  // Reads all time/date registers in one burst, returns DateTime.
+  // Reads time/date together and repeats at second 59 to handle rollover.
+  // Returns an invalid DateTime on I2C failure; check isValid().
   // DateTime.dayOfTheWeek() is computed by RTClib, not from the
   // one-hot weekday register.
 
-void adjust(const DateTime &dt);
+bool adjust(const DateTime &dt);
   // Sets all time/date registers from DateTime.
   // Also writes the one-hot weekday register from dt.dayOfTheWeek().
-  // Clears V1F and V2F flags.
+  // Holds and releases RESET around the write, then clears V1F and V2F flags.
+  // Returns false for invalid dates or an I2C error.
 
 bool lostPower();
   // Returns true if V2F set — time data is invalid, must call adjust().
   // Equivalent to DS3231's lostPower().
 
 bool isrunning();
-  // Returns true if oscillator has not lost power (V2F not set).
+  // Returns true if RESET and V2F are clear; false on I2C error.
 
 // Hundredths — not in DateTime, so a dedicated getter
 uint8_t getHundredths();  // 0–99, read-only register at 0x10
@@ -299,8 +325,10 @@ bool clearAlarm();
 
 ```cpp
 bool enableCountdownTimer(rv8803_timer_clock_t clock, uint16_t value);
-  // Sets 12-bit timer value (0–4095) and clock source.
+  // Sets the countdown preset (1–4095) and clock source.
+  // This API rejects zero; the hardware itself treats a zero preset as stopped.
   // Enables timer (TE=1). Preserves GP2–GP5 bits.
+  // Every call restarts the timer, so the first-period limits above apply again.
 
 bool disableCountdownTimer();
   // Stops timer (TE=0).
@@ -342,6 +370,10 @@ bool enableEventReset(bool enable);
 
 uint8_t getEventHundredths();  // 0–99, from 0x20
 uint8_t getEventSeconds();     // 0–59, from 0x21
+
+bool getEventTimestamp(rv8803_timestamp_t *timestamp);
+  // Reads seconds and hundredths in one transaction; false on error.
+  // Disable capture first if input events can recur during the read.
 
 bool eventFired();
   // Returns EVF flag state.
@@ -429,9 +461,9 @@ bool writeEventControl(uint8_t value);
 
 ```cpp
 bool reset();
-  // Sets RESET bit in control register.
-  // Resets prescaler and all registers except time/calendar.
-  // RESET bit auto-clears.
+  // Sets and then clears RESET to restart the prescaler.
+  // Preserves time/calendar and configuration registers.
+  // The hardware RESET bit does not auto-clear.
 ```
 
 ## BCD Helpers
@@ -473,3 +505,38 @@ hw_tests/                  — hardware validation tests
 - **EVI pin:** Must not float. Tie to VDD or GND if unused.
 - **Weekday encoding:** One-hot (bit 0 = Sunday or user-defined). NOT sequential 0–6 in register — driver converts.
 - **Power-on:** V1F and V2F are set. EVF may be set depending on EVI pin state. Clear all flags after init.
+
+### Metro Mini fixture and battery backup
+
+VIN is driven by A0, SDA/SCL use A4/A5, and CLOE/INT/EVI/SQW connect to
+D2/D3/D4/D5 respectively. This order matches the saved Rev A schematic,
+silkscreen, and board routing. The chip pin numbers are 4/6/7/2 respectively.
+
+The fitted CR1220 keeps the RTC supplied through the BAT54C when VIN is turned
+off. RAM retention and `lostPower() == false` are therefore expected. The legacy
+`06_ram` full-loss assertions require the coin cell to be removed; those
+assertions are not valid battery-backup tests.
+
+### CLKOUT requirements and current bench finding
+
+- CLKOUT is push-pull while enabled and high impedance when CLKOE is LOW.
+  It does not require an open-drain output pull-up.
+- The Rev A board pulls CLKOE down with 100 kΩ. CLKOE must reach at least
+  0.8 × the RTC's VDD at chip pin 4 to guarantee enable. Reading D2 HIGH on
+  the Metro does not establish the voltage at the chip.
+- FD selects 32.768 kHz, 1024 Hz, or 1 Hz; there is no separate software
+  CLKOUT-enable bit. The 32.768 kHz enable delay is at most 30.5 µs.
+- RESET can stop the 1024 Hz and 1 Hz outputs. It does not stop 32.768 kHz;
+  ERST does not stop any CLKOUT frequency.
+- The bench has working timekeeping and timed INT pulses, but the earlier SQW
+  probe saw no D5 edges, including with FD=00 and RESET=0. The saved board
+  routes both CLKOE and SQW to the correct chip pads. This does not establish
+  continuity or voltage on the assembled prototype.
+- Next physical checks are VDD at chip pin 3, CLKOE at chip pin 4, and CLKOUT
+  at chip pin 2 versus the SQW header. These separate supply/enable problems
+  from an output connection or assembly problem.
+
+Sources: [application manual §§2.2, 4.9, 7.2](https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-8803-C7_App-Manual.pdf#page=38)
+and [published errata](https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-8803-C7_Errata_Sheet.pdf).
+The errata cover older-silicon I2C communication and STOP detection, with no
+listed CLKOUT-specific defect.

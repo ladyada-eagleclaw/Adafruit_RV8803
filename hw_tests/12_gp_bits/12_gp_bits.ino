@@ -14,9 +14,9 @@ void setup() {
   while (!Serial)
     delay(10);
 
-  // Power the RV-8803 via GPIO (VCC wired to A3)
-  pinMode(A3, OUTPUT);
-  digitalWrite(A3, HIGH);
+  // Power the RV-8803 via GPIO (VCC wired to A0)
+  pinMode(A0, OUTPUT);
+  digitalWrite(A0, HIGH);
   delay(100); // Let chip stabilize after power-on
 
   Serial.println(F("=== HW Test 12: GP Bits ==="));
@@ -26,6 +26,8 @@ void setup() {
     Serial.println(F("FAIL: RV8803 not found"));
     return;
   }
+
+  rtc.setAlarmDate(1); // GP1 is available only in date alarm mode.
 
   uint8_t passed = 0;
   uint8_t total = 4;
