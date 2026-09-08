@@ -11,7 +11,7 @@ void setup() {
   Serial.println(F("Adafruit RV8803 basic and reset test"));
   digitalWrite(A0, HIGH);
   pinMode(A0, OUTPUT);
-  delay(100);
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
   check(rtc.begin(), F("Begin succeeded"));
   check(rtc.adjust(DateTime(2026, 9, 7, 12, 34, 20)), F("Time set"));
   check(rtc.now() == DateTime(2026, 9, 7, 12, 34, 20), F("Time read back"));

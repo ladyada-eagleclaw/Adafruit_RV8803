@@ -16,7 +16,7 @@ void setup() {
   pinMode(A0, OUTPUT);
   pinMode(eventPin, INPUT);
   pinMode(interruptPin, INPUT);
-  delay(100);
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
   check(rtc.begin(), F("Begin succeeded"));
   check(rtc.writeControlRegister(0), F("Interrupts disabled"));
   check(rtc.enableEventReset(false), F("Event reset disabled"));

@@ -25,7 +25,7 @@ void setup() {
   for (uint16_t pin = 2; pin <= 5; pin++) pinMode(pin, INPUT);
   digitalWrite(powerPin, HIGH);
   pinMode(powerPin, OUTPUT);
-  delay(100);
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
   check(rtc.begin(), F("Begin succeeded"));
   check(rtc.adjust(DateTime(2026, 1, 1, 12, 0, 0)), F("Reference time set"));
   uint8_t flags = rtc.readFlagRegister();
@@ -89,7 +89,7 @@ void restorePower() {
   pinMode(sclPin, INPUT);
   digitalWrite(powerPin, HIGH);
   pinMode(powerPin, OUTPUT);
-  delay(250);
+  delay(600); // Allow the full power-on reset interval before I2C access.
   Wire.begin();
 }
 

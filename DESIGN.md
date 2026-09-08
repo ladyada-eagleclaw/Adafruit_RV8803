@@ -517,6 +517,10 @@ off. RAM retention and `lostPower() == false` are therefore expected. The
 `06_ram` test defaults to `batteryInstalled = true` and checks these outcomes.
 Set it to `false` only when testing a fixture with the coin cell removed.
 
+After applying VIN, the fixture sketches wait 600 ms before accessing I2C.
+The application manual section 7.4 permits a 500 ms power-on reset interval,
+so a 100 ms delay is insufficient for a guaranteed cold start without backup.
+
 ### CLKOUT requirements and resolved bench finding
 
 - CLKOUT is push-pull while enabled and high impedance when CLKOE is LOW.

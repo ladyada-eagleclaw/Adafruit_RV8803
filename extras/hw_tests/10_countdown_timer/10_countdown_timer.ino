@@ -18,7 +18,7 @@ void setup() {
   digitalWrite(A0, HIGH);
   pinMode(A0, OUTPUT);
   pinMode(interruptPin, INPUT);
-  delay(100);
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
   check(rtc.begin(), F("Begin succeeded"));
   // Isolate the timer on the shared INT output and release prescaler RESET.
   check(rtc.writeControlRegister(0), F("Interrupt sources disabled"));

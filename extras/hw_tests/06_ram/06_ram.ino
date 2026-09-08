@@ -47,7 +47,7 @@ bool rtcPowerOn() {
   // Power on
   pinMode(RTC_VCC_PIN, OUTPUT);
   digitalWrite(RTC_VCC_PIN, HIGH);
-  delay(100);
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
 
   Wire.begin();
   delay(50);
@@ -70,7 +70,7 @@ void setup() {
   // Power the RV-8803 via GPIO (VCC wired to A0)
   pinMode(RTC_VCC_PIN, OUTPUT);
   digitalWrite(RTC_VCC_PIN, HIGH);
-  delay(100); // Let chip stabilize after power-on
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
 
   Serial.println(F("=== HW Test 06: RAM ==="));
   Serial.println();

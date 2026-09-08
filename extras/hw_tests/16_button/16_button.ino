@@ -20,7 +20,7 @@ void setup() {
   // The breakout pulls EVI and INT up. Do not drive either pin from the MCU.
   pinMode(buttonPin, INPUT);
   pinMode(interruptPin, INPUT);
-  delay(100);
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
   check(rtc.begin(), F("Begin succeeded"));
   // Isolate this test from timer, alarm, or update interrupts left by a sketch.
   check(rtc.writeControlRegister(0), F("Other interrupt sources disabled"));

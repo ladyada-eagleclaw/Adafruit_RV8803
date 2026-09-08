@@ -10,7 +10,7 @@ void setup() {
   // Power the RV-8803 via GPIO (VCC wired to A0)
   pinMode(A0, OUTPUT);
   digitalWrite(A0, HIGH);
-  delay(100); // Let chip stabilize after power-on
+  delay(600); // Power-on reset can take 500 ms (manual section 7.4).
 
   Serial.println(F("=== SQW Simple Diagnostic ==="));
 
