@@ -495,7 +495,7 @@ examples/
   simpletest/simpletest.ino
   alarm/alarm.ino
   timer/timer.ino
-hw_tests/                  — hardware validation tests
+extras/hw_tests/           — hardware validation tests
 ```
 
 ## Hardware Notes
@@ -513,11 +513,11 @@ D2/D3/D4/D5 respectively. This order matches the saved Rev A schematic,
 silkscreen, and board routing. The chip pin numbers are 4/6/7/2 respectively.
 
 The fitted CR1220 keeps the RTC supplied through the BAT54C when VIN is turned
-off. RAM retention and `lostPower() == false` are therefore expected. The legacy
-`06_ram` full-loss assertions require the coin cell to be removed; those
-assertions are not valid battery-backup tests.
+off. RAM retention and `lostPower() == false` are therefore expected. The
+`06_ram` test defaults to `batteryInstalled = true` and checks these outcomes.
+Set it to `false` only when testing a fixture with the coin cell removed.
 
-### CLKOUT requirements and current bench finding
+### CLKOUT requirements and resolved bench finding
 
 - CLKOUT is push-pull while enabled and high impedance when CLKOE is LOW.
   It does not require an open-drain output pull-up.
@@ -528,13 +528,14 @@ assertions are not valid battery-backup tests.
   CLKOUT-enable bit. The 32.768 kHz enable delay is at most 30.5 µs.
 - RESET can stop the 1024 Hz and 1 Hz outputs. It does not stop 32.768 kHz;
   ERST does not stop any CLKOUT frequency.
-- The bench has working timekeeping and timed INT pulses, but the earlier SQW
-  probe saw no D5 edges, including with FD=00 and RESET=0. The saved board
-  routes both CLKOE and SQW to the correct chip pads. This does not establish
-  continuity or voltage on the assembled prototype.
-- Next physical checks are VDD at chip pin 3, CLKOE at chip pin 4, and CLKOUT
-  at chip pin 2 versus the SQW header. These separate supply/enable problems
-  from an output connection or assembly problem.
+- The original missing SQW edges were caused by a loose SQW jumper. Reseating
+  it restored all three frequencies and CLKOE disable/re-enable behavior.
+- Tests passed both with VIN connected directly to 5 V and after restoring
+  VIN to A0. With A0 power, `07_sqw_modes` passed 8/8 checks: 3 edges in 3 s
+  at 1 Hz, 206 in 200 ms at 1024 Hz, and 3280 in 100 ms at 32.768 kHz.
+  CLKOE LOW produced zero edges; HIGH restored the clock.
+- These short edge counts verify clock operation and selection. They do not
+  establish ppm accuracy or verify the frequency effect of offset calibration.
 
 Sources: [application manual §§2.2, 4.9, 7.2](https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-8803-C7_App-Manual.pdf#page=38)
 and [published errata](https://www.microcrystal.com/fileadmin/Media/Products/RTC/App.Manual/RV-8803-C7_Errata_Sheet.pdf).

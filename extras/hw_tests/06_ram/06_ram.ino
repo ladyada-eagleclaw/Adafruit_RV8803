@@ -2,8 +2,8 @@
  * @file 06_ram.ino
  * @brief Hardware test 06: RAM Read/Write + Power Cycle
  *
- * Tests the 1-byte RAM register, including loss after full power cycle.
- * Requires: VCC wired to A0, no coin battery.
+ * Tests the 1-byte RAM register while cycling VIN from A0.
+ * Set batteryInstalled to match the fixture before running.
  */
 
 #include <Adafruit_RV8803.h>
@@ -13,12 +13,14 @@
 #define RTC_SCL_PIN A5
 
 Adafruit_RV8803 rtc;
+const bool batteryInstalled = true;
 
 /*!
- * @brief Kill all power to the RV-8803 breakout.
+ * @brief Remove VIN from the RV-8803 breakout.
  *
  * Ends Wire, then drives VCC, SDA, and SCL all LOW to prevent
- * parasitic power through ESD protection diodes.
+ * parasitic power through ESD protection diodes. An installed coin cell
+ * continues supplying the RTC.
  */
 void rtcPowerOff() {
   Wire.end();
@@ -105,8 +107,13 @@ void setup() {
     }
   }
 
-  // Test 5: RAM lost after power cycle (no battery backup)
-  Serial.print(F("Test 5: RAM lost after power cycle ... "));
+  // Establish valid time and cleared power flags before removing VIN.
+  if (!rtc.adjust(DateTime(2026, 9, 8, 12, 0, 0))) {
+    Serial.println(F("FAIL: Could not initialize time before power cycle"));
+    return;
+  }
+  // Test 5: Compare retention against the installed battery configuration.
+  Serial.print(F("Test 5: RAM after VIN power cycle ... "));
   Serial.flush();
 
   rtc.writeRAM(0xA5);
@@ -121,20 +128,21 @@ void setup() {
       uint8_t afterCycle = rtc.readRAM();
       Serial.print(F("before=0xA5 after=0x"));
       Serial.print(afterCycle, HEX);
-      if (afterCycle != 0xA5) {
-        Serial.println(F(" PASS (data lost)"));
+      bool retained = afterCycle == 0xA5;
+      if (retained == batteryInstalled) {
+        Serial.println(F(" PASS (matches battery configuration)"));
         passed++;
       } else {
-        Serial.println(F(" FAIL (data survived)"));
+        Serial.println(F(" FAIL (unexpected retention state)"));
       }
     }
   }
 
-  // Test 6: lostPower() true after power cycle
+  // Test 6: Backup should prevent V2F; full power loss should set it.
   Serial.print(F("Test 6: lostPower() after cycle ... "));
   bool lost = rtc.lostPower();
   Serial.print(lost ? F("true") : F("false"));
-  if (lost) {
+  if (rtc.readFlagRegister() != RV8803_READ_ERROR && lost == !batteryInstalled) {
     Serial.println(F(" PASS"));
     passed++;
   } else {
