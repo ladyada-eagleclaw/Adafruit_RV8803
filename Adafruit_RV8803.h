@@ -199,10 +199,20 @@ typedef struct {
 class Adafruit_RV8803 : public RTC_I2C {
  public:
   // Core — Init & Time (RTClib compatible)
+  /** @brief Construct an RTC interface; call begin() before accessing it. */
   Adafruit_RV8803() = default;
   ~Adafruit_RV8803();
-  Adafruit_RV8803(const Adafruit_RV8803&) = delete;
-  Adafruit_RV8803& operator=(const Adafruit_RV8803&) = delete;
+  /**
+   * @brief Copying is disabled because the instance owns its I2C interface.
+   * @param other Instance that must not be copied.
+   */
+  Adafruit_RV8803(const Adafruit_RV8803& other) = delete;
+  /**
+   * @brief Copy assignment is disabled to prevent sharing the owned interface.
+   * @param other Instance that must not be assigned.
+   * @return Not callable; this operator is deleted.
+   */
+  Adafruit_RV8803& operator=(const Adafruit_RV8803& other) = delete;
   bool begin(TwoWire* wire = &Wire);
   DateTime now();
   bool adjust(const DateTime& dt);
