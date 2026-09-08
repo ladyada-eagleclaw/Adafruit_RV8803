@@ -33,6 +33,11 @@ checks that setting the time clears the flags and restarts normal timekeeping.
 The off interval is configurable with `powerOffMs`. This tests loss of backup
 power; it does not detect an absent battery while VIN remains powered.
 
+`16_button` tests the physical EVI pushbutton. Open Serial Monitor at 115200
+baud, then press and hold the button and release it when prompted. Each prompt
+allows 30 seconds. The test checks D4, the RTC event flag, and INT assertion
+and acknowledgement. D4 remains an input throughout; reset the Metro to repeat.
+
 See [DESIGN.md](DESIGN.md) for register details and validation notes.
 
 MIT licensed; see [LICENSE](LICENSE).
