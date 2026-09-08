@@ -26,6 +26,13 @@ SDA/SCL on A4/A5, and CLOE/INT/EVI/SQW on D2/D3/D4/D5. In `06_ram`, set
 `batteryInstalled` to match the fixture; it defaults to an installed coin cell.
 These tests change the RTC time and settings.
 
+`15_no_battery` requires the coin cell removed and VIN powered only by A0.
+It removes VIN for five minutes to allow the backup supply capacitor to
+discharge, checks that power loss remains flagged through `begin()`, then
+checks that setting the time clears the flags and restarts normal timekeeping.
+The off interval is configurable with `powerOffMs`. This tests loss of backup
+power; it does not detect an absent battery while VIN remains powered.
+
 See [DESIGN.md](DESIGN.md) for register details and validation notes.
 
 MIT licensed; see [LICENSE](LICENSE).
