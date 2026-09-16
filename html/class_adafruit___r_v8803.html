@@ -437,7 +437,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Check if RTC lost power and time is invalid. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if V2F is set or an I2C read fails; false otherwise </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>Use <a class="el" href="class_adafruit___r_v8803.html#abca6b831986254e28836ae445f4067c8" title="Read the Flag Register (0x0E) ">readFlagRegister()</a> to distinguish a flagged power loss from an I2C error. An absent coin cell is not detected while VIN supplies the RTC. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Use the boolean <a class="el" href="class_adafruit___r_v8803.html#abca6b831986254e28836ae445f4067c8" title="Read the Flag Register (0x0E) ">readFlagRegister()</a> overload to distinguish a flagged power loss from an I2C error. An absent coin cell is not detected while VIN supplies the RTC. </dd></dl>
 
 </div>
 </div>
