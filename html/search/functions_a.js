@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['readcontrolregister',['readControlRegister',['../class_adafruit___r_v8803.html#a976ae50315be288f17b4fff5954968e0',1,'Adafruit_RV8803']]],
-  ['readeventcontrol',['readEventControl',['../class_adafruit___r_v8803.html#acdaabb62d8b0d4bb49d85abf15497ed1',1,'Adafruit_RV8803']]],
-  ['readextensionregister',['readExtensionRegister',['../class_adafruit___r_v8803.html#a90d48ac70ccff886f1f1a116a0c4b4fc',1,'Adafruit_RV8803']]],
   ['readflagregister',['readFlagRegister',['../class_adafruit___r_v8803.html#abca6b831986254e28836ae445f4067c8',1,'Adafruit_RV8803::readFlagRegister()'],['../class_adafruit___r_v8803.html#a8a7f5e3297c39f6046b5dc91aae2e901',1,'Adafruit_RV8803::readFlagRegister(uint8_t *flags)']]],
   ['readram',['readRAM',['../class_adafruit___r_v8803.html#acdde2edf442618ce8cb5d2cd96617d35',1,'Adafruit_RV8803']]],
   ['readsqwpinmode',['readSqwPinMode',['../class_adafruit___r_v8803.html#aa89cbc4986a1c5f14925eb05c22aeb30',1,'Adafruit_RV8803']]],
