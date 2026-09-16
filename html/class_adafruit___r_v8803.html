@@ -233,12 +233,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:acdde2edf442618ce8cb5d2cd96617d35"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___r_v8803.html#acdde2edf442618ce8cb5d2cd96617d35">readRAM</a> ()</td></tr>
 <tr class="memdesc:acdde2edf442618ce8cb5d2cd96617d35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read from the 1-byte RAM register.  <a href="#acdde2edf442618ce8cb5d2cd96617d35">More...</a><br /></td></tr>
 <tr class="separator:acdde2edf442618ce8cb5d2cd96617d35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0fbe199929a409a0a8c85efcd7a43e6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___r_v8803.html#af0fbe199929a409a0a8c85efcd7a43e6">writeGP</a> (uint8_t bits)</td></tr>
-<tr class="memdesc:af0fbe199929a409a0a8c85efcd7a43e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write to general purpose bits (GP0-GP5)  <a href="#af0fbe199929a409a0a8c85efcd7a43e6">More...</a><br /></td></tr>
-<tr class="separator:af0fbe199929a409a0a8c85efcd7a43e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af43c69fdb089fc700b90f4981a76dca0"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___r_v8803.html#af43c69fdb089fc700b90f4981a76dca0">readGP</a> ()</td></tr>
-<tr class="memdesc:af43c69fdb089fc700b90f4981a76dca0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read general purpose bits (GP0-GP5)  <a href="#af43c69fdb089fc700b90f4981a76dca0">More...</a><br /></td></tr>
-<tr class="separator:af43c69fdb089fc700b90f4981a76dca0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90d48ac70ccff886f1f1a116a0c4b4fc"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___r_v8803.html#a90d48ac70ccff886f1f1a116a0c4b4fc">readExtensionRegister</a> ()</td></tr>
 <tr class="memdesc:a90d48ac70ccff886f1f1a116a0c4b4fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the Extension Register (0x0D)  <a href="#a90d48ac70ccff886f1f1a116a0c4b4fc">More...</a><br /></td></tr>
 <tr class="separator:a90d48ac70ccff886f1f1a116a0c4b4fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1422,55 +1416,6 @@ Disable the alarm interrupt while changing match fields, then <a class="el" href
 
 <p>Read from the 1-byte RAM register. </p>
 <dl class="section return"><dt>Returns</dt><dd>Stored byte; 0xFF can also indicate an I2C read error </dd></dl>
-
-</div>
-</div>
-<a id="af0fbe199929a409a0a8c85efcd7a43e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af0fbe199929a409a0a8c85efcd7a43e6">&#9670;&nbsp;</a></span>writeGP()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Adafruit_RV8803::writeGP </td>
-          <td>(</td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>bits</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Write to general purpose bits (GP0-GP5) </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">bits</td><td>6-bit value (bit 0=GP0, bit 5=GP5) </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true on success; false for invalid bits, weekday mode, or access failure </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>Requires date alarm mode (WADA=1); GP1 is Saturday in weekday mode. </dd></dl>
-
-</div>
-</div>
-<a id="af43c69fdb089fc700b90f4981a76dca0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af43c69fdb089fc700b90f4981a76dca0">&#9670;&nbsp;</a></span>readGP()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint8_t Adafruit_RV8803::readGP </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Read general purpose bits (GP0-GP5) </p>
-<dl class="section return"><dt>Returns</dt><dd>6-bit value (bit 0=GP0, bit 5=GP5) </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>GP1 is the Saturday alarm bit in weekday mode. This getter has no separate I2C-error result; failed bit-field reads can appear as set bits. </dd></dl>
 
 </div>
 </div>
