@@ -232,10 +232,10 @@ Enumerations</h2></td></tr>
 <a class="el" href="_adafruit___r_v8803_8h.html#ac64d0dfe0d722c55fc7f4893a84e735ea4b517243d64a1946d0f5abd8aef0ee24">RV8803_UpdateMinute</a> = 0x01
  }</td></tr>
 <tr class="separator:ac64d0dfe0d722c55fc7f4893a84e735e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2e5a5bf739873467a30616ca8be2671"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671">rv8803_interrupt_t</a> { <a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671a7fb7a99749fdfb9fff3c487cefcc6720">RV8803_InterruptUpdate</a> = 0x20, 
-<a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671a93e0575e21f23170962e8ffa65e21c2f">RV8803_InterruptTimer</a> = 0x10, 
-<a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671ad07c3454071dd14ec7c0dc62f89843b8">RV8803_InterruptAlarm</a> = 0x08, 
-<a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671a467d9875537c938e6f072643416936fb">RV8803_InterruptEvent</a> = 0x04
+<tr class="memitem:ae2e5a5bf739873467a30616ca8be2671"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671">rv8803_interrupt_t</a> { <a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671a7fb7a99749fdfb9fff3c487cefcc6720">RV8803_InterruptUpdate</a> = 5, 
+<a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671a93e0575e21f23170962e8ffa65e21c2f">RV8803_InterruptTimer</a> = 4, 
+<a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671ad07c3454071dd14ec7c0dc62f89843b8">RV8803_InterruptAlarm</a> = 3, 
+<a class="el" href="_adafruit___r_v8803_8h.html#ae2e5a5bf739873467a30616ca8be2671a467d9875537c938e6f072643416936fb">RV8803_InterruptEvent</a> = 2
  }</td></tr>
 <tr class="separator:ae2e5a5bf739873467a30616ca8be2671"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -1163,7 +1163,7 @@ Enumerations</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Interrupt sources (bits in Control Register) </p>
+<p>Interrupt sources (bit positions in Control Register, not masks) </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ae2e5a5bf739873467a30616ca8be2671a7fb7a99749fdfb9fff3c487cefcc6720"></a>RV8803_InterruptUpdate&#160;</td><td class="fielddoc"><p>UIE — periodic update </p>
 </td></tr>
