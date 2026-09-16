@@ -248,6 +248,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abca6b831986254e28836ae445f4067c8"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___r_v8803.html#abca6b831986254e28836ae445f4067c8">readFlagRegister</a> ()</td></tr>
 <tr class="memdesc:abca6b831986254e28836ae445f4067c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the Flag Register (0x0E)  <a href="#abca6b831986254e28836ae445f4067c8">More...</a><br /></td></tr>
 <tr class="separator:abca6b831986254e28836ae445f4067c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a7f5e3297c39f6046b5dc91aae2e901"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___r_v8803.html#a8a7f5e3297c39f6046b5dc91aae2e901">readFlagRegister</a> (uint8_t *flags)</td></tr>
+<tr class="memdesc:a8a7f5e3297c39f6046b5dc91aae2e901"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the Flag Register (0x0E) with explicit success status.  <a href="#a8a7f5e3297c39f6046b5dc91aae2e901">More...</a><br /></td></tr>
+<tr class="separator:a8a7f5e3297c39f6046b5dc91aae2e901"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34c11b21b814a9d32ece6dcd3d713eed"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___r_v8803.html#a34c11b21b814a9d32ece6dcd3d713eed">writeFlagRegister</a> (uint8_t value)</td></tr>
 <tr class="memdesc:a34c11b21b814a9d32ece6dcd3d713eed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write to the Flag Register (0x0E)  <a href="#a34c11b21b814a9d32ece6dcd3d713eed">More...</a><br /></td></tr>
 <tr class="separator:a34c11b21b814a9d32ece6dcd3d713eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1519,7 +1522,7 @@ Disable the alarm interrupt while changing match fields, then <a class="el" href
 </div>
 </div>
 <a id="abca6b831986254e28836ae445f4067c8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abca6b831986254e28836ae445f4067c8">&#9670;&nbsp;</a></span>readFlagRegister()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#abca6b831986254e28836ae445f4067c8">&#9670;&nbsp;</a></span>readFlagRegister() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1535,6 +1538,33 @@ Disable the alarm interrupt while changing match fields, then <a class="el" href
 
 <p>Read the Flag Register (0x0E) </p>
 <dl class="section return"><dt>Returns</dt><dd>Register value, or RV8803_READ_ERROR on I2C error </dd></dl>
+
+</div>
+</div>
+<a id="a8a7f5e3297c39f6046b5dc91aae2e901"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a7f5e3297c39f6046b5dc91aae2e901">&#9670;&nbsp;</a></span>readFlagRegister() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Adafruit_RV8803::readFlagRegister </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>flags</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Read the Flag Register (0x0E) with explicit success status. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">flags</td><td>Destination for the register value; unchanged on failure </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success, false on I2C failure or a null destination </dd></dl>
 
 </div>
 </div>
