@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['seconds',['seconds',['../structrv8803__timestamp__t.html#a2f746672af4d7d4cbf750a0f5af6135c',1,'rv8803_timestamp_t']]]
+  ['fields',['fields',['../unionrv8803__alarm__register__t.html#ac6467ab4b54d5926acb90ca98de4d56b',1,'rv8803_alarm_register_t']]]
 ];

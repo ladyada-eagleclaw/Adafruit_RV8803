@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hundredths',['hundredths',['../structrv8803__timestamp__t.html#a5e6aea64927dd3e12d61c375f9dd0ceb',1,'rv8803_timestamp_t']]]
+  ['data',['data',['../unionrv8803__alarm__register__t.html#acf82000b8fd44e1812355e861bdcbaf0',1,'rv8803_alarm_register_t']]]
 ];
